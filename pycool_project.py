@@ -131,6 +131,21 @@ class TrainModel():
   def set_device(self, device):
     self.device =  device
 
+  def set_seed(self, seed):
+    """Set Seed"""
+
+    random.seed(seed)
+    np.random.seed(seed)
+
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+      torch.cuda.manual_seed(seed)
+      torch.cuda.manual_seed_all(seed)
+
+      torch.backends.cudnn.deterministic = True
+      torch.backends.cudnn.benchmark = False
+    os.environ["PYTHONHASHSEED"] = str(seed)
+
   def build_densenet_transfer_learning_model(self, model):
     self.model = model
     # model_ft = self.model
