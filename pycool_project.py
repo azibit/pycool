@@ -272,21 +272,31 @@ class TrainModel():
   @torch.no_grad() # this functions execution omits gradient tracking.
   def get_preds(self, pred_type):
     pred_type_preds = torch.tensor([]).cuda()
+    true_labels = torch.tensor([]).cuda()
+    
     for batch in self.dataloader[pred_type]:
         images, labels = batch
         images, labels = images.cuda(), labels.cuda() 
 
         preds = self.model(images)
         preds = preds.cuda()
+        
         pred_type_preds = torch.cat(
             (pred_type_preds, preds)
             ,dim=0
         )
         
+        true_labels = torch.cat(
+            (true_labels, labels)
+            ,dim=0
+        )
+        
     self.predictions[pred_type] = pred_type_preds.max(1)[1].tolist()
     self.cmt = torch.zeros(len(self.classnames['train']),len(self.classnames['train']), dtype=torch.int64)
+    self.true_labels = true_labels
+    
     for i in range(len(self.predictions[pred_type])):
-      tl = self.dataset[pred_type].targets[i]
+      tl = int(self.true_labels[i].item())
       pl = self.predictions[pred_type][i]
 
       self.cmt[tl, pl] = self.cmt[tl, pl] + 1
